@@ -1,0 +1,51 @@
+services:
+  app:
+    build: docker/php
+    #    restart: on-failure
+    #    build: frontend
+    volumes:
+      # Re-use local composer cache via host-volume
+      - ~/.composer-docker/cache:/root/.composer/cache:delegated
+      # Mount source-code for development
+      - ./:/app
+    working_dir: /app
+
+  nginx:
+    image: nginx:1.19-alpine
+    restart: on-failure
+    ports:
+      - "80:80"
+      - "88:88"
+    volumes:
+      - ./:/app
+      - ./docker/nginx/vhost.conf:/etc/nginx/conf.d/vhost.conf
+    depends_on:
+      - app
+
+  db:
+    image: mysql:5.7
+    #    restart: on-failure
+    volumes:
+      - ./docker/mysql/config.cnf:/etc/mysql/conf.d/config.cnf
+      - ./data_mysql:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: book
+      MYSQL_USER: db_user
+      MYSQL_PASSWORD: db_pas
+
+  adminer:
+    image: adminer:latest
+    #    restart: on-failure
+    depends_on:
+      - db
+    ports:
+      - "8080:8080"
+#    networks:
+#      - app_net
+
+networks:
+  default:
+    name: net_default
