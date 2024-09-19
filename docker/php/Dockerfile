@@ -35,11 +35,13 @@ RUN docker-php-ext-install \
     opcache \
     pdo_mysql
 
-RUN pecl install -o -f xdebug-3.3.2 \
+RUN pecl install xdebug-3.3.2 \
+    && docker-php-ext-enable xdebug \
     && rm -rf /tmp/pear
 
 COPY ./install-composer.sh /
 COPY ./php.ini /usr/local/etc/php/
+COPY ./xdebug.ini /usr/local/etc/php/conf.d
 COPY ./www.conf /usr/local/etc/php/
 
 RUN apt-get purge -y g++ \
